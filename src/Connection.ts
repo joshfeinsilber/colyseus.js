@@ -1,12 +1,15 @@
-import { ITransport, ITransportEventMap } from "./transport/ITransport";
-import { WebSocketTransport } from "./transport/WebSocketTransport";
+import {
+    ITransport,
+    ITransportConstructor,
+    ITransportEventMap,
+} from "./transport/ITransport";
 
 export class Connection implements ITransport {
     transport: ITransport;
     events: ITransportEventMap = {};
 
-    constructor() {
-        this.transport = new WebSocketTransport(this.events);
+    constructor(transport: ITransportConstructor) {
+        this.transport = new transport(this.events);
     }
 
     send(data: ArrayBuffer | Array<number>): void {
@@ -20,5 +23,4 @@ export class Connection implements ITransport {
     close(code?: number, reason?: string): void {
         this.transport.close(code, reason);
     }
-
 }

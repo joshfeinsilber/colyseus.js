@@ -4,6 +4,7 @@ import { ServerError } from './errors/ServerError';
 import { Room, RoomAvailable } from './Room';
 import { Auth } from './Auth';
 import { SchemaConstructor } from './serializer/SchemaSerializer';
+import { ITransportConstructor } from "./transport/ITransport";
 
 export type JoinOptions = any;
 
@@ -26,8 +27,13 @@ export class Client {
     protected endpoint: string;
     protected _auth: Auth;
 
-    constructor(endpoint: string = DEFAULT_ENDPOINT) {
+    private transport!: ITransportConstructor
+
+    constructor(endpoint: string = DEFAULT_ENDPOINT, options?: {transport?: ITransportConstructor}) {
         this.endpoint = endpoint;
+        if (options && options.transport) {
+            this.transport = options.transport
+        }
     }
 
     public get auth(): Auth {
@@ -65,7 +71,7 @@ export class Client {
         room.roomId = response.room.roomId;
         room.sessionId = response.sessionId;
 
-        room.connect(this.buildEndpoint(response.room, { sessionId: room.sessionId }));
+        room.connect(this.buildEndpoint(response.room, { sessionId: room.sessionId }), this.transport);
 
         return new Promise((resolve, reject) => {
             const onError = (code, message) => reject(new ServerError(code, message));

@@ -11,6 +11,8 @@ import { createSignal, EventEmitter } from './core/signal';
 
 import { SchemaSerializer, SchemaConstructor } from './serializer/SchemaSerializer';
 import { Context, Schema, encode, decode } from '@colyseus/schema';
+import { ITransportConstructor } from './transport/ITransport';
+import { WebSocketTransport } from './transport/WebSocketTransport';
 
 export interface RoomAvailable<Metadata = any> {
     roomId: string;
@@ -59,8 +61,8 @@ export class Room<State= any> {
     // TODO: deprecate me on version 1.0
     get id() { return this.roomId; }
 
-    public connect(endpoint: string) {
-        this.connection = new Connection();
+    public connect(endpoint: string, transport?: ITransportConstructor) {
+        this.connection = new Connection(transport || WebSocketTransport);
         this.connection.events.onmessage = this.onMessageCallback.bind(this);
         this.connection.events.onclose = (e: CloseEvent) => {
             if (!this.hasJoined) {
